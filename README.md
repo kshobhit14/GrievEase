@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # GrievEase
 
 Smart Complaint Management System using NLP-based Priority Classification.
