@@ -1,5 +1,5 @@
 <<<<<<< HEAD
-# GrievEase — Backend
+# GrievEase
 
 Smart Complaint Management System using NLP-based Priority Classification.
 Node.js + Express + MongoDB backend with a rule-based NLP priority scoring engine.
