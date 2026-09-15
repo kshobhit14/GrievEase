@@ -1,126 +1,166 @@
-
 # GrievEase
 
-Smart Complaint Management System using NLP-based Priority Classification.
-Node.js + Express + MongoDB backend with a rule-based NLP priority scoring engine.
+GrievEase is an intelligent complaint management system designed for educational institutions. It provides a centralized platform where students and staff can submit complaints, track complaint progress, and receive real-time updates.
 
-## Folder Structure
+The system combines a modern React frontend, Node.js/Express backend, MongoDB database, WebSocket-based real-time communication, and a Python Machine Learning service for automated complaint classification and priority prediction.
 
-```
-grievease-backend/
-├── server.js                  # Entry point
-├── package.json
-├── .env.example                # Copy to .env and fill in values
-├── config/
-│   └── db.js                   # MongoDB connection
-├── models/
-│   ├── User.js                 # User schema (student/staff/admin)
-│   └── Complaint.js            # Complaint schema
-├── controllers/
-│   ├── authController.js       # register, login
-│   └── complaintController.js  # create, list, status update
-├── routes/
-│   ├── authRoutes.js
-│   └── complaintRoutes.js
-├── middleware/
-│   ├── authMiddleware.js       # JWT verification
-│   └── roleMiddleware.js       # Role-based access control
-├── services/
-│   └── nlpService.js           # Keyword + sentiment priority scoring
-└── utils/
-    └── priorityWeights.js      # Tunable keyword lists & scoring weights
-```
+---
 
-## Setup
+# 📖 Project Overview
 
-1. Install dependencies:
-   ```
-   npm install
-   ```
+Traditional complaint management systems often rely on manual processing and periodic updates. This can make it difficult for students to know whether their complaints have been received, processed, or resolved.
 
-2. Copy `.env.example` to `.env` and fill in your values:
-   ```
-   PORT=5000
-   MONGO_URI=mongodb://127.0.0.1:27017/grievease
-   JWT_SECRET=your_long_random_secret
-   JWT_EXPIRES_IN=7d
-   ```
+GrievEase addresses this problem by providing:
 
-3. Start MongoDB locally (or use MongoDB Atlas and paste the connection string into `MONGO_URI`).
+- A centralized complaint management platform
+- Secure user authentication
+- Role-based access control
+- Automated complaint classification
+- Automated priority prediction
+- Real-time complaint updates
+- Administrative complaint management
+- Persistent complaint records using MongoDB
 
-4. Run the server:
-   ```
-   npm run dev     # with nodemon (auto-restart)
-   npm start       # plain node
-   ```
+The application follows a distributed architecture where the frontend, backend, database, and Machine Learning service work together.
 
-5. Server runs at `http://localhost:5000`.
+---
 
-## Creating an Admin User
+# 🛠️ Tech Stack Overview
 
-Public registration only allows `student` or `staff` roles (see `authController.js`).
-To create an admin, register a normal user first, then manually update their role in MongoDB:
+| Layer | Technologies |
+|---|---|
+| **Frontend** | React, Vite, Tailwind CSS, JavaScript, Axios |
+| **Backend** | Node.js, Express.js, REST APIs |
+| **Real-Time Communication** | WebSockets |
+| **Database** | MongoDB, Mongoose |
+| **Authentication** | JWT, bcrypt |
+| **Machine Learning** | Python, FastAPI, NLP, Text Classification |
+| **ML Tasks** | Complaint Category Prediction, Priority Prediction |
+| **API Communication** | REST API, HTTP |
+| **Testing** | Thunder Client, Postman |
+| **Database Management** | MongoDB Compass |
+| **Version Control** | Git, GitHub |
+| **Development Environment** | Visual Studio Code |
 
-```js
-db.users.updateOne({ email: "admin@college.edu" }, { $set: { role: "admin" } })
-```
+------
 
-## API Endpoints
+# 🚀 Key Features
 
-| Method | Route                        | Access         | Purpose                              |
-|--------|-------------------------------|----------------|---------------------------------------|
-| POST   | /api/auth/register            | Public         | Register student/staff                |
-| POST   | /api/auth/login               | Public         | Login, returns JWT                    |
-| POST   | /api/complaints                | Student/Staff  | Submit complaint (auto NLP scoring)   |
-| GET    | /api/complaints/mine           | Student/Staff  | View own complaint history            |
-| GET    | /api/complaints?station=&status= | Admin        | View priority-sorted queue            |
-| GET    | /api/complaints/:id            | Owner/Admin    | View single complaint                 |
-| PATCH  | /api/complaints/:id/status     | Admin          | Update status (Open/In Progress/Resolved) |
+## 👤 User Management
 
-All routes except `/api/auth/*` require:
-```
-Authorization: Bearer <token>
-```
+- User registration
+- User login
+- JWT-based authentication
+- Role-based authorization
+- Student, Staff, and Admin roles
 
-## Example: Submit a Complaint
+## 📝 Complaint Management
 
-```
-POST /api/complaints
-Authorization: Bearer <token>
-Content-Type: application/json
+- Submit complaints
+- View submitted complaints
+- Track complaint status
+- View individual complaint details
+- Admin complaint management
+- Complaint status updates
+- Complaint categorization
+- Complaint priority classification
 
-{
-  "title": "Water leakage in hostel bathroom",
-  "description": "The bathroom tap has been leaking continuously since morning, water is flooding the floor.",
-  "station": "Hostel"
-}
-```
+## 🤖 Machine Learning
 
-Response:
-```json
-{
-  "message": "Complaint submitted successfully",
-  "ticketId": "665f1c2e8a1b2c3d4e5f6789",
-  "priorityLevel": "Critical",
-  "status": "Open"
-}
-```
+- Automatic complaint category prediction
+- Automatic complaint priority prediction
+- Natural Language Processing
+- Python-based ML service
+- Backend-to-ML-service communication through HTTP APIs
 
-## How Priority Scoring Works
+## ⚡ Real-Time Communication
 
-See `services/nlpService.js` and `utils/priorityWeights.js`. The engine combines:
-1. **Keyword severity** — weighted domain keywords (e.g. "leaking", "fire", "not working")
-2. **Sentiment analysis** — VADER compound score; more negative tone → higher urgency
-3. **Station base weight** — small tunable weight per station (e.g. Hostel/Main Gate slightly higher than Classroom)
+- WebSocket-based communication
+- Real-time complaint access
+- Live complaint updates
+- Real-time complaint status changes
+- Live synchronization between connected clients
+- Reduced dependency on repeated API polling
 
-These combine into a single score, mapped to a priority label:
-`Critical` (≥8) → `High` (≥6) → `Medium` (≥3) → `Low` (below 3)
+## 🗄️ Database
 
-Adjust keyword lists, weights, and thresholds in `utils/priorityWeights.js` without touching the scoring logic.
+- MongoDB database
+- Mongoose ODM
+- Persistent complaint storage
+- Persistent user information
+- Complaint status and resolution tracking
 
-## Notes
+---
 
-- Passwords are hashed with bcrypt before storage.
-- JWT is used for stateless authentication.
-- The NLP engine runs entirely offline/synchronously — no external API calls, so it's fast and reliable for demos.
+# 🏗️ System Architecture
 
+```text
+                         ┌──────────────────────────┐
+                         │      React Frontend      │
+                         │      Vite + Tailwind     │
+                         └────────────┬─────────────┘
+                                      │
+                         ┌────────────┴────────────┐
+                         │                         │
+                      REST API                WebSocket
+                         │                         │
+                         └────────────┬────────────┘
+                                      │
+                                      ▼
+                         ┌──────────────────────────┐
+                         │     Node.js Backend      │
+                         │   Express + WebSocket    │
+                         └────────────┬─────────────┘
+                                      │
+                    ┌─────────────────┴─────────────────┐
+                    │                                   │
+                    ▼                                   ▼
+         ┌──────────────────────┐            ┌──────────────────────┐
+         │       MongoDB        │            │     ML Service       │
+         │      Database        │            │   Python + FastAPI   │
+         └──────────────────────┘            └──────────────────────┘
+
+-------
+
+# Application - Workflow
+                    User
+                     │
+                     ▼
+              Login / Register
+                     │
+                     ▼
+              Submit Complaint
+                     │
+                     ▼
+              React Frontend
+                     │
+                     │ REST API
+                     ▼
+              Node.js Backend
+                     │
+             ┌───────┴────────┐
+             │                │
+             ▼                ▼
+        MongoDB          ML Service
+             │                │
+             │          ┌─────┴─────┐
+             │          │           │
+             │       Category    Priority
+             │          │           │
+             │          └─────┬─────┘
+             │                │
+             └────────┬───────┘
+                      ▼
+               Complaint Record
+                      │
+                      ▼
+                Admin Dashboard
+                      │
+                      ▼
+              Status Management
+                      │
+                      ▼
+             Real-Time WebSocket
+                      │
+                      ▼
+              Connected Clients
