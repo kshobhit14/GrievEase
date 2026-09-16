@@ -106,18 +106,6 @@ Response:
 }
 ```
 
-## How Priority Scoring Works
-
-See `services/nlpService.js` and `utils/priorityWeights.js`. The engine combines:
-1. **Keyword severity** — weighted domain keywords (e.g. "leaking", "fire", "not working")
-2. **Sentiment analysis** — VADER compound score; more negative tone → higher urgency
-3. **Station base weight** — small tunable weight per station (e.g. Hostel/Main Gate slightly higher than Classroom)
-
-These combine into a single score, mapped to a priority label:
-`Critical` (≥8) → `High` (≥6) → `Medium` (≥3) → `Low` (below 3)
-
-Adjust keyword lists, weights, and thresholds in `utils/priorityWeights.js` without touching the scoring logic.
-
 ## Notes
 
 - Passwords are hashed with bcrypt before storage.
