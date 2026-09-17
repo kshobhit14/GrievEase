@@ -15,7 +15,7 @@ const Login = () => {
     setError('');
     const res = await login(email, password);
     if (res.success) {
-      navigate(res.role === 'admin' ? '/admin' : '/dashboard');
+      navigate(res.role === 'admin' || res.role === 'main_admin' ? '/admin' : '/dashboard');
     } else {
       setError(res.message);
     }

@@ -18,10 +18,12 @@ exports.createComplaint = async (req, res) => {
     // Default Fallbacks
     let predictedCategory = "Other";
     let predictedPriority = "Low";
+    let predictedPriorityScore = 25;
 
     // 1. ML API Call -> Hits Python Flask running on Port 5000
     try {
-      const mlResponse = await axios.post("http://127.0.0.1:5000/predict", {
+      const mlResponse = await axios.post(`${process.env.ML_SERVICE_URL || "http://127.0.0.1:5000"}/predict`, {
+        title,
         complaint: description,
         station: station
       }, { timeout: 3000 }); // 3-second timeout guard
@@ -29,6 +31,7 @@ exports.createComplaint = async (req, res) => {
       if (mlResponse.data) {
         predictedCategory = mlResponse.data.category || mlResponse.data.predicted_category || "Other";
         predictedPriority = mlResponse.data.priorityLevel || mlResponse.data.priority || mlResponse.data.priority_level || "Low";
+        predictedPriorityScore = Number(mlResponse.data.priorityScore ?? mlResponse.data.priority_score ?? 25);
       }
     } catch (mlErr) {
       console.warn("Python ML Service (Port 5000) Offline/Error. Using fallback:", mlErr.message);
@@ -41,6 +44,7 @@ exports.createComplaint = async (req, res) => {
       station,
       category: predictedCategory,
       priorityLevel: predictedPriority,
+      priorityScore: Number.isFinite(predictedPriorityScore) ? predictedPriorityScore : 25,
       raisedBy: req.user._id,
       status: "Open"
     });
@@ -53,7 +57,8 @@ exports.createComplaint = async (req, res) => {
     try {
       const io = req.app.get("socketio");
       if (io) {
-        io.emit("new_complaint", populatedComplaint);
+        io.to(`station:${station}`).emit("new_complaint", populatedComplaint);
+        io.to("main-admins").emit("new_complaint", populatedComplaint);
       }
     } catch (socketErr) {
       console.error("Socket emission failed:", socketErr.message);
@@ -88,13 +93,19 @@ exports.getMyComplaints = async (req, res) => {
 exports.getAllComplaints = async (req, res) => {
   try {
     const { station, status } = req.query;
-    const filter = {};
-    if (station) filter.station = station;
+    const isMainAdmin = req.user.role === "main_admin";
+    if (!isMainAdmin && !req.user.assignedStation) {
+      return res.status(403).json({ message: "This admin account has no assigned station." });
+    }
+
+    // Station admins are isolated; the main admin can view all stations or one station.
+    const filter = isMainAdmin ? {} : { station: req.user.assignedStation };
+    if (isMainAdmin && station) filter.station = station;
     if (status) filter.status = status;
 
     const complaints = await Complaint.find(filter)
       .populate("raisedBy", "name email role studentId staffId wardId")
-      .sort({ createdAt: -1 });
+      .sort({ priorityScore: -1, createdAt: 1 });
 
     res.status(200).json(complaints);
   } catch (error) {
@@ -114,7 +125,9 @@ exports.getComplaintById = async (req, res) => {
     }
 
     const isOwner = complaint.raisedBy._id.toString() === req.user._id.toString();
-    if (!isOwner && req.user.role !== "admin") {
+    const isAdmin = req.user.role === "admin" || req.user.role === "main_admin";
+    const canAccessStation = req.user.role === "main_admin" || complaint.station === req.user.assignedStation;
+    if (!isOwner && (!isAdmin || !canAccessStation)) {
       return res.status(403).json({ message: "Not authorized to view this complaint" });
     }
 
@@ -140,6 +153,10 @@ exports.updateComplaintStatus = async (req, res) => {
       return res.status(404).json({ message: "Complaint not found" });
     }
 
+    if (req.user.role !== "main_admin" && (!req.user.assignedStation || complaint.station !== req.user.assignedStation)) {
+      return res.status(403).json({ message: "You can only update complaints from your assigned station." });
+    }
+
     complaint.status = status;
     if (status === "Resolved") {
       complaint.resolvedBy = req.user._id;
@@ -154,7 +171,8 @@ exports.updateComplaintStatus = async (req, res) => {
     // Emit real-time status update to all connected clients
     const io = req.app.get("socketio");
     if (io) {
-      io.emit("status_updated", populatedComplaint);
+      io.to(`station:${complaint.station}`).emit("status_updated", populatedComplaint);
+      io.to("main-admins").emit("status_updated", populatedComplaint);
     }
 
     res.status(200).json({

@@ -20,8 +20,8 @@ router.post("/", createComplaint);
 router.get("/mine", getMyComplaints);
 
 // Admin routes
-router.get("/", roleMiddleware("admin"), getAllComplaints);
-router.patch("/:id/status", roleMiddleware("admin"), updateComplaintStatus);
+router.get("/", roleMiddleware("admin", "main_admin"), getAllComplaints);
+router.patch("/:id/status", roleMiddleware("admin", "main_admin"), updateComplaintStatus);
 
 // Shared (owner or admin) - keep below /mine to avoid path clash
 router.get("/:id", getComplaintById);

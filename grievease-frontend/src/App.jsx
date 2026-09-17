@@ -26,7 +26,7 @@ function App() {
             </Route>
 
             {/* Protected Admin Only Dashboard */}
-            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['admin', 'main_admin']} />}>
               <Route path="/admin" element={<AdminDash />} />
             </Route>
           </Routes>

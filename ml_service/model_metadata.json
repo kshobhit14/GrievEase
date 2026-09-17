@@ -1,0 +1,410 @@
+{
+  "best_model_name": "TF-IDF + Linear SVM",
+  "model_type": "linear_svm",
+  "input_format": "station + complaint text",
+  "selection_metric": "macro_f1",
+  "results": {
+    "TF-IDF + Linear SVM": {
+      "macro_f1": 0.843,
+      "weighted_f1": 0.9268,
+      "accuracy": 0.9289,
+      "classification_report": {
+        "Academic Support And Resources": {
+          "precision": 0.9624060150375939,
+          "recall": 0.9552238805970149,
+          "f1-score": 0.9588014981273408,
+          "support": 134.0
+        },
+        "Academics": {
+          "precision": 0.8947368421052632,
+          "recall": 0.9444444444444444,
+          "f1-score": 0.918918918918919,
+          "support": 18.0
+        },
+        "Activities And Travelling": {
+          "precision": 0.8,
+          "recall": 1.0,
+          "f1-score": 0.8888888888888888,
+          "support": 8.0
+        },
+        "Athletics And Sports": {
+          "precision": 1.0,
+          "recall": 0.9545454545454546,
+          "f1-score": 0.9767441860465116,
+          "support": 22.0
+        },
+        "Career Opportunities": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 18.0
+        },
+        "Cleanliness": {
+          "precision": 1.0,
+          "recall": 0.7777777777777778,
+          "f1-score": 0.875,
+          "support": 18.0
+        },
+        "Financial Support": {
+          "precision": 1.0,
+          "recall": 0.8333333333333334,
+          "f1-score": 0.9090909090909091,
+          "support": 18.0
+        },
+        "Health And Well-Being Support": {
+          "precision": 0.9090909090909091,
+          "recall": 0.9090909090909091,
+          "f1-score": 0.9090909090909091,
+          "support": 11.0
+        },
+        "Housing And Transportation": {
+          "precision": 0.8,
+          "recall": 0.9230769230769231,
+          "f1-score": 0.8571428571428571,
+          "support": 13.0
+        },
+        "Infrastructure": {
+          "precision": 0.7878787878787878,
+          "recall": 1.0,
+          "f1-score": 0.8813559322033898,
+          "support": 26.0
+        },
+        "International Student Experiences": {
+          "precision": 0.9411764705882353,
+          "recall": 0.9411764705882353,
+          "f1-score": 0.9411764705882353,
+          "support": 17.0
+        },
+        "Mess/Food": {
+          "precision": 0.9565217391304348,
+          "recall": 1.0,
+          "f1-score": 0.9777777777777777,
+          "support": 44.0
+        },
+        "Online Learning": {
+          "precision": 0.9,
+          "recall": 1.0,
+          "f1-score": 0.9473684210526315,
+          "support": 18.0
+        },
+        "Other": {
+          "precision": 1.0,
+          "recall": 0.8,
+          "f1-score": 0.8888888888888888,
+          "support": 15.0
+        },
+        "Ragging": {
+          "precision": 0.9230769230769231,
+          "recall": 1.0,
+          "f1-score": 0.96,
+          "support": 12.0
+        },
+        "Safety": {
+          "precision": 0.5,
+          "recall": 1.0,
+          "f1-score": 0.6666666666666666,
+          "support": 1.0
+        },
+        "Security": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 1.0
+        },
+        "Student Affairs": {
+          "precision": 1.0,
+          "recall": 0.4,
+          "f1-score": 0.5714285714285714,
+          "support": 10.0
+        },
+        "Technical Issues": {
+          "precision": 0.8888888888888888,
+          "recall": 0.8888888888888888,
+          "f1-score": 0.8888888888888888,
+          "support": 18.0
+        },
+        "accuracy": 0.9289099526066351,
+        "macro avg": {
+          "precision": 0.8559882408314229,
+          "recall": 0.859345162228578,
+          "f1-score": 0.8430120939369149,
+          "support": 422.0
+        },
+        "weighted avg": {
+          "precision": 0.9365317470531825,
+          "recall": 0.9289099526066351,
+          "f1-score": 0.9267779899359609,
+          "support": 422.0
+        }
+      }
+    },
+    "1D CNN": {
+      "macro_f1": 0.7763,
+      "weighted_f1": 0.8839,
+      "accuracy": 0.8815,
+      "classification_report": {
+        "Academic Support And Resources": {
+          "precision": 0.9516129032258065,
+          "recall": 0.8805970149253731,
+          "f1-score": 0.9147286821705426,
+          "support": 134.0
+        },
+        "Academics": {
+          "precision": 0.7619047619047619,
+          "recall": 0.8888888888888888,
+          "f1-score": 0.8205128205128205,
+          "support": 18.0
+        },
+        "Activities And Travelling": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 8.0
+        },
+        "Athletics And Sports": {
+          "precision": 0.9166666666666666,
+          "recall": 1.0,
+          "f1-score": 0.9565217391304348,
+          "support": 22.0
+        },
+        "Career Opportunities": {
+          "precision": 0.9473684210526315,
+          "recall": 1.0,
+          "f1-score": 0.972972972972973,
+          "support": 18.0
+        },
+        "Cleanliness": {
+          "precision": 0.875,
+          "recall": 0.7777777777777778,
+          "f1-score": 0.8235294117647058,
+          "support": 18.0
+        },
+        "Financial Support": {
+          "precision": 0.7142857142857143,
+          "recall": 0.8333333333333334,
+          "f1-score": 0.7692307692307693,
+          "support": 18.0
+        },
+        "Health And Well-Being Support": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 11.0
+        },
+        "Housing And Transportation": {
+          "precision": 0.9230769230769231,
+          "recall": 0.9230769230769231,
+          "f1-score": 0.9230769230769231,
+          "support": 13.0
+        },
+        "Infrastructure": {
+          "precision": 0.8947368421052632,
+          "recall": 0.6538461538461539,
+          "f1-score": 0.7555555555555555,
+          "support": 26.0
+        },
+        "International Student Experiences": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 17.0
+        },
+        "Mess/Food": {
+          "precision": 0.9361702127659575,
+          "recall": 1.0,
+          "f1-score": 0.967032967032967,
+          "support": 44.0
+        },
+        "Online Learning": {
+          "precision": 0.9473684210526315,
+          "recall": 1.0,
+          "f1-score": 0.972972972972973,
+          "support": 18.0
+        },
+        "Other": {
+          "precision": 0.8333333333333334,
+          "recall": 0.6666666666666666,
+          "f1-score": 0.7407407407407407,
+          "support": 15.0
+        },
+        "Ragging": {
+          "precision": 0.6923076923076923,
+          "recall": 0.75,
+          "f1-score": 0.72,
+          "support": 12.0
+        },
+        "Safety": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 1.0
+        },
+        "Security": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 1.0
+        },
+        "Student Affairs": {
+          "precision": 0.625,
+          "recall": 0.5,
+          "f1-score": 0.5555555555555556,
+          "support": 10.0
+        },
+        "Technical Issues": {
+          "precision": 0.75,
+          "recall": 1.0,
+          "f1-score": 0.8571428571428571,
+          "support": 18.0
+        },
+        "accuracy": 0.8815165876777251,
+        "macro avg": {
+          "precision": 0.7773069416724937,
+          "recall": 0.7828519346586904,
+          "f1-score": 0.7762933667294641,
+          "support": 422.0
+        },
+        "weighted avg": {
+          "precision": 0.8936536184653537,
+          "recall": 0.8815165876777251,
+          "f1-score": 0.8839151559597909,
+          "support": 422.0
+        }
+      }
+    },
+    "BiGRU": {
+      "macro_f1": 0.6341,
+      "weighted_f1": 0.7388,
+      "accuracy": 0.7204,
+      "classification_report": {
+        "Academic Support And Resources": {
+          "precision": 0.9405940594059405,
+          "recall": 0.7089552238805971,
+          "f1-score": 0.8085106382978723,
+          "support": 134.0
+        },
+        "Academics": {
+          "precision": 0.8571428571428571,
+          "recall": 0.6666666666666666,
+          "f1-score": 0.75,
+          "support": 18.0
+        },
+        "Activities And Travelling": {
+          "precision": 1.0,
+          "recall": 0.625,
+          "f1-score": 0.7692307692307693,
+          "support": 8.0
+        },
+        "Athletics And Sports": {
+          "precision": 0.7142857142857143,
+          "recall": 0.6818181818181818,
+          "f1-score": 0.6976744186046512,
+          "support": 22.0
+        },
+        "Career Opportunities": {
+          "precision": 0.75,
+          "recall": 0.8333333333333334,
+          "f1-score": 0.7894736842105263,
+          "support": 18.0
+        },
+        "Cleanliness": {
+          "precision": 0.5909090909090909,
+          "recall": 0.7222222222222222,
+          "f1-score": 0.65,
+          "support": 18.0
+        },
+        "Financial Support": {
+          "precision": 0.5,
+          "recall": 0.6111111111111112,
+          "f1-score": 0.55,
+          "support": 18.0
+        },
+        "Health And Well-Being Support": {
+          "precision": 0.8333333333333334,
+          "recall": 0.9090909090909091,
+          "f1-score": 0.8695652173913043,
+          "support": 11.0
+        },
+        "Housing And Transportation": {
+          "precision": 0.6923076923076923,
+          "recall": 0.6923076923076923,
+          "f1-score": 0.6923076923076923,
+          "support": 13.0
+        },
+        "Infrastructure": {
+          "precision": 0.7777777777777778,
+          "recall": 0.5384615384615384,
+          "f1-score": 0.6363636363636364,
+          "support": 26.0
+        },
+        "International Student Experiences": {
+          "precision": 0.7727272727272727,
+          "recall": 1.0,
+          "f1-score": 0.8717948717948718,
+          "support": 17.0
+        },
+        "Mess/Food": {
+          "precision": 1.0,
+          "recall": 0.8409090909090909,
+          "f1-score": 0.9135802469135802,
+          "support": 44.0
+        },
+        "Online Learning": {
+          "precision": 0.875,
+          "recall": 0.7777777777777778,
+          "f1-score": 0.8235294117647058,
+          "support": 18.0
+        },
+        "Other": {
+          "precision": 0.4782608695652174,
+          "recall": 0.7333333333333333,
+          "f1-score": 0.5789473684210527,
+          "support": 15.0
+        },
+        "Ragging": {
+          "precision": 0.27586206896551724,
+          "recall": 0.6666666666666666,
+          "f1-score": 0.3902439024390244,
+          "support": 12.0
+        },
+        "Safety": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 1.0
+        },
+        "Security": {
+          "precision": 0.25,
+          "recall": 1.0,
+          "f1-score": 0.4,
+          "support": 1.0
+        },
+        "Student Affairs": {
+          "precision": 0.18181818181818182,
+          "recall": 0.2,
+          "f1-score": 0.19047619047619047,
+          "support": 10.0
+        },
+        "Technical Issues": {
+          "precision": 0.5555555555555556,
+          "recall": 0.8333333333333334,
+          "f1-score": 0.6666666666666666,
+          "support": 18.0
+        },
+        "accuracy": 0.7203791469194313,
+        "macro avg": {
+          "precision": 0.6339776038839027,
+          "recall": 0.6863677411006555,
+          "f1-score": 0.6341244586780286,
+          "support": 422.0
+        },
+        "weighted avg": {
+          "precision": 0.7870770543936388,
+          "recall": 0.7203791469194313,
+          "f1-score": 0.7388099040389403,
+          "support": 422.0
+        }
+      }
+    }
+  }
+}

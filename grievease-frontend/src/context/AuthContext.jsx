@@ -1,11 +1,27 @@
 import { createContext, useContext, useState } from 'react';
 import API from '../services/api';
+import { socket } from '../services/socket';
 
 const AuthContext = createContext();
 
+const getStoredUser = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem('user')) || null;
+  } catch {
+    sessionStorage.removeItem('user');
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user')) || null);
-  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
+  // Session storage intentionally clears when the browser/app session is closed.
+  // Remove the old persistent values once so a previous login cannot be restored.
+  const [user, setUser] = useState(() => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    return getStoredUser();
+  });
+  const [token, setToken] = useState(() => sessionStorage.getItem('token') || null);
   const [loading, setLoading] = useState(false);
 
   // Login handler
@@ -14,12 +30,12 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await API.post('/auth/login', { email, password });
       
-      const userData = { _id: data._id, name: data.name, email: data.email, role: data.role };
+      const userData = { _id: data._id, name: data.name, email: data.email, role: data.role, assignedStation: data.assignedStation || null };
       setUser(userData);
       setToken(data.token);
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('user', JSON.stringify(userData));
       return { success: true, role: data.role };
     } catch (err) {
       return { success: false, message: err.response?.data?.message || 'Login failed' };
@@ -34,12 +50,12 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await API.post('/auth/register', formData);
       
-      const userData = { _id: data._id, name: data.name, email: data.email, role: data.role };
+      const userData = { _id: data._id, name: data.name, email: data.email, role: data.role, assignedStation: data.assignedStation || null };
       setUser(userData);
       setToken(data.token);
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('user', JSON.stringify(userData));
       return { success: true, role: data.role };
     } catch (err) {
       return { success: false, message: err.response?.data?.message || 'Registration failed' };
@@ -50,10 +66,11 @@ export const AuthProvider = ({ children }) => {
 
   // Logout handler
   const logout = () => {
+    socket.disconnect();
     setUser(null);
     setToken(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
   };
 
   return (
@@ -63,4 +80,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// This hook intentionally shares the context declared above.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

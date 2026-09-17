@@ -27,7 +27,7 @@ const Navbar = () => {
             {user ? (
               <>
                 <Link 
-                  to={user.role === 'admin' ? '/admin' : '/dashboard'} 
+                  to={user.role === 'admin' || user.role === 'main_admin' ? '/admin' : '/dashboard'} 
                   className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition"
                 >
                   <LayoutDashboard className="w-4 h-4" />
@@ -36,6 +36,7 @@ const Navbar = () => {
 
                 {/* Role Badge */}
                 <span className={`px-2.5 py-1 rounded-full text-xs font-semibold capitalize border ${
+                  user.role === 'main_admin' ? 'bg-red-950 text-red-300 border-red-800' :
                   user.role === 'admin' ? 'bg-purple-950 text-purple-300 border-purple-800' :
                   user.role === 'parent' ? 'bg-amber-950 text-amber-300 border-amber-800' :
                   user.role === 'staff' ? 'bg-emerald-950 text-emerald-300 border-emerald-800' :

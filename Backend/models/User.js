@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
+const stations = ["Academic Block", "Classroom", "Main Gate", "Library", "Hostel", "Pedestrian", "Other"];
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -23,7 +25,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["student", "staff", "parent", "admin"],
+      enum: ["student", "staff", "parent", "admin", "main_admin"],
       default: "student"
     },
     studentId: {
@@ -39,6 +41,13 @@ const userSchema = new mongoose.Schema(
     wardId: {
       type: String,
       trim: true,
+      default: null
+    },
+    // Every admin is responsible for exactly one campus station. This is set
+    // only by the administrator-creation script, never through public signup.
+    assignedStation: {
+      type: String,
+      enum: stations,
       default: null
     }
   },

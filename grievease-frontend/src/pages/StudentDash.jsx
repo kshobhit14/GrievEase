@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import API from '../services/api';
+import DashboardAnalytics from '../components/DashboardAnalytics';
 import { 
   Plus, 
   Clock, 
@@ -48,7 +49,8 @@ const StudentDash = () => {
   };
 
   useEffect(() => {
-    fetchGrievances();
+    const initialFetch = setTimeout(fetchGrievances, 0);
+    return () => clearTimeout(initialFetch);
   }, []);
 
   useEffect(() => {
@@ -87,8 +89,6 @@ const StudentDash = () => {
     switch (level?.toUpperCase()) {
       case 'CRITICAL':
         return 'bg-red-950/80 text-red-400 border-red-700/80 animate-pulse';
-      case 'HIGH':
-        return 'bg-amber-950/80 text-amber-400 border-amber-800/80';
       case 'MEDIUM':
         return 'bg-blue-950/80 text-blue-400 border-blue-800/80';
       case 'LOW':
@@ -231,6 +231,13 @@ const StudentDash = () => {
           </div>
         )}
 
+        <DashboardAnalytics
+          complaints={grievances}
+          chartType="status-donut"
+          title="Your Complaint Status"
+          scopeLabel="Your submitted complaints"
+        />
+
         {/* Complaints History */}
         <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-xl">
           <h2 className="text-xl font-bold text-white mb-6 flex items-center space-x-2">
@@ -248,7 +255,7 @@ const StudentDash = () => {
             <div className="grid grid-cols-1 gap-4">
               {grievances.map((item) => (
                 <div
-                  key={item._id || Math.random()}
+                  key={item._id || `${item.title}-${item.createdAt}`}
                   className="p-5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                 >
                   <div className="space-y-2 flex-1">

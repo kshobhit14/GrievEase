@@ -1,114 +1,58 @@
+# GrievEase backend
 
-# GrievEase
+GrievEase is a station-based campus grievance system. Students, staff, and parents submit complaints; each station has a dedicated admin who can see and resolve only that station's queue.
 
-Smart Complaint Management System using NLP-based Priority Classification.
-Node.js + Express + MongoDB backend with a rule-based NLP priority scoring engine.
+## Services and ports
 
-## Folder Structure
+| Service | Default port |
+| --- | ---: |
+| React frontend | 5173 |
+| Express API and Socket.IO | 8000 |
+| Flask ML service | 5000 |
+| MongoDB | 27017 |
 
-```
-grievease-backend/
-├── server.js                  # Entry point
-├── package.json
-├── .env.example                # Copy to .env and fill in values
-├── config/
-│   └── db.js                   # MongoDB connection
-├── models/
-│   ├── User.js                 # User schema (student/staff/admin)
-│   └── Complaint.js            # Complaint schema
-├── controllers/
-│   ├── authController.js       # register, login
-│   └── complaintController.js  # create, list, status update
-├── routes/
-│   ├── authRoutes.js
-│   └── complaintRoutes.js
-├── middleware/
-│   ├── authMiddleware.js       # JWT verification
-│   └── roleMiddleware.js       # Role-based access control
-├── services/
-│   └── nlpService.js           # Keyword + sentiment priority scoring
-└── utils/
-    └── priorityWeights.js      # Tunable keyword lists & scoring weights
-```
+Copy `.env.example` to `.env`, set a strong `JWT_SECRET`, then run `npm install` and `npm run dev`. The ML service URL is configured with `ML_SERVICE_URL`; it must not use the API port.
 
-## Setup
+### MongoDB Atlas
 
-1. Install dependencies:
-   ```
-   npm install
-   ```
+For Atlas, set `MONGO_URI` to the Atlas connection string and add the computer's current public IP address under **Atlas → Network Access**. If the campus or company network blocks outbound port `27017`, use another network or ask the network administrator to allow Atlas shard hosts on port `27017`. The API now waits for MongoDB before it starts, so its terminal will show a clear connection error instead of letting login requests hang.
 
-2. Copy `.env.example` to `.env` and fill in your values:
-   ```
-   PORT=5000
-   MONGO_URI=mongodb://127.0.0.1:27017/grievease
-   JWT_SECRET=your_long_random_secret
-   JWT_EXPIRES_IN=7d
-   ```
+## Priority policy
 
-3. Start MongoDB locally (or use MongoDB Atlas and paste the connection string into `MONGO_URI`).
+Only three priority levels exist: `Low`, `Medium`, and `Critical`. The Flask service returns both a level and numeric score, and the backend stores both. Admin queues are sorted by score first, then oldest complaint first.
 
-4. Run the server:
-   ```
-   npm run dev     # with nodemon (auto-restart)
-   npm start       # plain node
-   ```
-
-5. Server runs at `http://localhost:5000`.
-
-## Creating an Admin User
-
-Public registration only allows `student` or `staff` roles (see `authController.js`).
-To create an admin, register a normal user first, then manually update their role in MongoDB:
-
-```js
-db.users.updateOne({ email: "admin@college.edu" }, { $set: { role: "admin" } })
-```
-
-## API Endpoints
-
-| Method | Route                        | Access         | Purpose                              |
-|--------|-------------------------------|----------------|---------------------------------------|
-| POST   | /api/auth/register            | Public         | Register student/staff                |
-| POST   | /api/auth/login               | Public         | Login, returns JWT                    |
-| POST   | /api/complaints                | Student/Staff  | Submit complaint (auto NLP scoring)   |
-| GET    | /api/complaints/mine           | Student/Staff  | View own complaint history            |
-| GET    | /api/complaints?station=&status= | Admin        | View priority-sorted queue            |
-| GET    | /api/complaints/:id            | Owner/Admin    | View single complaint                 |
-| PATCH  | /api/complaints/:id/status     | Admin          | Update status (Open/In Progress/Resolved) |
-
-All routes except `/api/auth/*` require:
-```
-Authorization: Bearer <token>
-```
-
-## Example: Submit a Complaint
+For records created before this policy, run:
 
 ```
-POST /api/complaints
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "title": "Water leakage in hostel bathroom",
-  "description": "The bathroom tap has been leaking continuously since morning, water is flooding the floor.",
-  "station": "Hostel"
-}
+npm run migrate:priorities
 ```
 
-Response:
-```json
-{
-  "message": "Complaint submitted successfully",
-  "ticketId": "665f1c2e8a1b2c3d4e5f6789",
-  "priorityLevel": "Critical",
-  "status": "Open"
-}
+This converts legacy `High` records to `Critical`, so an old urgent complaint is never demoted.
+
+## Station admins
+
+Admins cannot be registered publicly. There are two administrator types:
+
+- `admin`: a station admin, restricted to one assigned station.
+- `main_admin`: the single main admin, able to view, filter, and resolve complaints across every station.
+
+To create either admin, put a unique name, email and password in `.env`, then run:
+
+```
+npm run seed:admin
 ```
 
-## Notes
+For a station admin, set `ADMIN_ROLE=admin` and a valid `ADMIN_STATION`; repeat with a different email for every campus station. For the main admin, set `ADMIN_ROLE=main_admin` and leave `ADMIN_STATION` blank. The script refuses to overwrite an existing user. Station admins are restricted at the API and Socket.IO layers; the main admin receives all live updates.
 
-- Passwords are hashed with bcrypt before storage.
-- JWT is used for stateless authentication.
-- The NLP engine runs entirely offline/synchronously — no external API calls, so it's fast and reliable for demos.
+## API routes
 
+| Method | Route | Access |
+| --- | --- | --- |
+| POST | `/api/auth/register` | Public student, staff, or parent signup |
+| POST | `/api/auth/login` | Public |
+| POST | `/api/grievances` | Authenticated reporter |
+| GET | `/api/grievances/mine` | Authenticated reporter |
+| GET | `/api/complaints` | Assigned station admin or main admin |
+| PATCH | `/api/complaints/:id/status` | Assigned station admin or main admin |
+
+All protected HTTP routes need `Authorization: Bearer <token>`. Socket.IO also requires the same token; it is no longer publicly readable.

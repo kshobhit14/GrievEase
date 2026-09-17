@@ -23,7 +23,7 @@ exports.registerUser = async (req, res) => {
     }
 
     // Allow student, staff, and parent self-registration.
-    // Restrict "admin" from public signup.
+    // Restrict all administrator roles from public signup.
     const allowedRoles = ["student", "staff", "parent"];
     const safeRole = allowedRoles.includes(role) ? role : "student";
 
@@ -34,7 +34,8 @@ exports.registerUser = async (req, res) => {
       role: safeRole,
       studentId: safeRole === "student" ? studentId || null : null,
       staffId: safeRole === "staff" ? staffId || null : null,
-      wardId: safeRole === "parent" ? wardId || null : null
+      wardId: safeRole === "parent" ? wardId || null : null,
+      assignedStation: null
     });
 
     res.status(201).json({
@@ -45,6 +46,7 @@ exports.registerUser = async (req, res) => {
       studentId: user.studentId,
       staffId: user.staffId,
       wardId: user.wardId,
+      assignedStation: user.assignedStation,
       token: generateToken(user._id)
     });
   } catch (error) {
@@ -75,6 +77,7 @@ exports.loginUser = async (req, res) => {
       studentId: user.studentId,
       staffId: user.staffId,
       wardId: user.wardId,
+      assignedStation: user.assignedStation,
       token: generateToken(user._id)
     });
   } catch (error) {

@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import API from '../services/api';
 import { socket } from '../services/socket';
+import { useAuth } from '../context/AuthContext';
+import DashboardAnalytics from '../components/DashboardAnalytics';
 import { 
   ShieldAlert, 
   Clock, 
@@ -14,31 +16,34 @@ import {
 } from 'lucide-react';
 
 const AdminDash = () => {
+  const { user } = useAuth();
+  const isMainAdmin = user?.role === 'main_admin';
   const [grievances, setGrievances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
-  const [stationFilter, setStationFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [stationFilter, setStationFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [priorityFilter, setPriorityFilter] = useState('All');
   const [updatingId, setUpdatingId] = useState(null);
   const [liveNotification, setLiveNotification] = useState(null);
 
-  const fetchAllGrievances = async () => {
+  const fetchAllGrievances = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await API.get('/complaints');
+      const params = isMainAdmin && stationFilter !== 'All' ? { station: stationFilter } : undefined;
+      const { data } = await API.get('/complaints', { params });
       setGrievances(data);
     } catch (err) {
       console.error("Failed to fetch complaints from backend:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [isMainAdmin, stationFilter]);
 
   useEffect(() => {
     // 1. Initial Data Fetch
-    fetchAllGrievances();
+    const initialFetch = setTimeout(fetchAllGrievances, 0);
 
     // 2. Ensure Socket is connected on mount
     if (!socket.connected) {
@@ -85,12 +90,13 @@ const AdminDash = () => {
 
     // Cleanup Listeners on unmount
     return () => {
+      clearTimeout(initialFetch);
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off('new_complaint', onNewComplaint);
       socket.off('status_updated', onStatusUpdated);
     };
-  }, []);
+  }, [fetchAllGrievances]);
 
   const handleStatusChange = async (id, newStatus) => {
     setUpdatingId(id);
@@ -99,7 +105,7 @@ const AdminDash = () => {
       setGrievances(prev =>
         prev.map(item => (item._id === id ? { ...item, status: newStatus } : item))
       );
-    } catch (err) {
+    } catch {
       alert('Failed to update complaint status on backend.');
     } finally {
       setUpdatingId(null);
@@ -108,7 +114,7 @@ const AdminDash = () => {
 
   // Filter Logic
   const filteredGrievances = grievances.filter(g => {
-    const matchesStation = stationFilter === 'All' || g.station === stationFilter;
+    const matchesStation = !isMainAdmin || stationFilter === 'All' || g.station === stationFilter;
     const matchesStatus = statusFilter === 'All' || g.status === statusFilter;
     const matchesCategory = categoryFilter === 'All' || g.category === categoryFilter;
     const matchesPriority = priorityFilter === 'All' || g.priorityLevel?.toUpperCase() === priorityFilter.toUpperCase();
@@ -120,8 +126,6 @@ const AdminDash = () => {
     switch (level?.toUpperCase()) {
       case 'CRITICAL':
         return 'bg-red-950 text-red-400 border-red-700 animate-pulse';
-      case 'HIGH':
-        return 'bg-amber-950 text-amber-400 border-amber-800';
       case 'MEDIUM':
         return 'bg-blue-950 text-blue-400 border-blue-800';
       default:
@@ -131,9 +135,7 @@ const AdminDash = () => {
 
   // Stats Counters
   const totalCount = grievances.length;
-  const criticalCount = grievances.filter(
-    g => g.priorityLevel?.toUpperCase() === 'CRITICAL' || g.priorityLevel?.toUpperCase() === 'HIGH'
-  ).length;
+  const criticalCount = grievances.filter(g => g.priorityLevel?.toUpperCase() === 'CRITICAL').length;
   const openCount = grievances.filter(g => g.status === 'Open').length;
 
   return (
@@ -156,13 +158,13 @@ const AdminDash = () => {
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center space-x-3">
               <ShieldAlert className="w-8 h-8 text-purple-400" />
-              <span>Admin Urgency Queue</span>
+              <span>{isMainAdmin ? 'Main Admin Dashboard' : `${user?.assignedStation || 'Station'} Admin Queue`}</span>
               
               {/* Dynamic Connection Indicator */}
               {isSocketConnected ? (
                 <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-xs font-mono">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  <span>SOCKET LIVE</span>
+                  <span>Live</span>
                 </span>
               ) : (
                 <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-red-950 text-red-400 border border-red-800 text-xs font-mono">
@@ -171,7 +173,9 @@ const AdminDash = () => {
                 </span>
               )}
             </h1>
-            <p className="text-slate-400 text-sm mt-1">NLP Prioritized Campus Grievance Redressal Center</p>
+            <p className="text-slate-400 text-sm mt-1">
+              {isMainAdmin ? 'All-station grievance control, live updates and overall analytics.' : <>Only complaints from <span className="text-slate-200 font-semibold">{user?.assignedStation || 'your assigned station'}</span> are visible here.</>}
+            </p>
           </div>
 
           <button
@@ -195,7 +199,7 @@ const AdminDash = () => {
 
           <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-xs font-medium uppercase tracking-wider">High / Critical Urgency</p>
+              <p className="text-slate-400 text-xs font-medium uppercase tracking-wider">Critical Urgency</p>
               <h3 className="text-3xl font-black text-red-400 mt-1">{criticalCount}</h3>
             </div>
             <AlertOctagon className="w-10 h-10 text-red-400 opacity-80" />
@@ -218,6 +222,22 @@ const AdminDash = () => {
           </div>
 
           <div className="flex flex-wrap gap-4 w-full sm:w-auto">
+            {isMainAdmin && (
+              <select
+                value={stationFilter}
+                onChange={(e) => setStationFilter(e.target.value)}
+                className="bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="All">All Stations</option>
+                <option value="Academic Block">Academic Block</option>
+                <option value="Classroom">Classroom</option>
+                <option value="Main Gate">Main Gate</option>
+                <option value="Library">Library</option>
+                <option value="Hostel">Hostel</option>
+                <option value="Pedestrian">Pedestrian</option>
+                <option value="Other">Other</option>
+              </select>
+            )}
             {/* Category Filter */}
             <select
               value={categoryFilter}
@@ -229,25 +249,12 @@ const AdminDash = () => {
               <option value="Sanitation">Sanitation</option>
               <option value="Cleanliness">Cleanliness</option>
               <option value="Infrastructure">Infrastructure</option>
-              <option value="Academics">Academics</option>
+              <option value="Academic">Academic</option>
+              <option value="Academic Support And Resources">Academic Support</option>
+              <option value="Furniture">Furniture</option>
               <option value="IT & Network">IT & Network</option>
               <option value="Online Learning">Online Learning</option>
               <option value="Security">Security</option>
-            </select>
-
-            {/* Station Filter */}
-            <select
-              value={stationFilter}
-              onChange={(e) => setStationFilter(e.target.value)}
-              className="bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
-            >
-              <option value="All">All Stations</option>
-              <option value="Academic Block">Academic Block</option>
-              <option value="Classroom">Classroom</option>
-              <option value="Hostel">Hostel</option>
-              <option value="Library">Library</option>
-              <option value="Main Gate">Main Gate</option>
-              <option value="Pedestrian">Pedestrian</option>
             </select>
 
             {/* Priority Filter */}
@@ -258,7 +265,6 @@ const AdminDash = () => {
             >
               <option value="All">All Priorities</option>
               <option value="Critical">Critical</option>
-              <option value="High">High</option>
               <option value="Medium">Medium</option>
               <option value="Low">Low</option>
             </select>
@@ -276,6 +282,13 @@ const AdminDash = () => {
             </select>
           </div>
         </div>
+
+        <DashboardAnalytics
+          complaints={grievances}
+          chartType={isMainAdmin ? 'station-status' : 'priority'}
+          title={isMainAdmin ? 'Station-wise Complaint Status' : 'Priority-wise Complaint Status'}
+          scopeLabel={isMainAdmin ? (stationFilter === 'All' ? 'All campus stations' : stationFilter) : (user?.assignedStation || 'Assigned station')}
+        />
 
         {/* Queue Items List */}
         <div className="space-y-4">
